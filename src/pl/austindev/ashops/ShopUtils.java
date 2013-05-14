@@ -18,6 +18,8 @@
 package pl.austindev.ashops;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -305,15 +307,16 @@ public class ShopUtils {
 		return false;
 	}
 
-	public static Set<ItemStack> getContents(Chest chest) {
-		Set<ItemStack> items = new HashSet<ItemStack>();
+	public static List<ItemStack> getContents(Chest chest) {
+		List<ItemStack> items = new LinkedList<ItemStack>();
 		for (ItemStack offerTag : chest.getInventory().getContents()) {
 			if (offerTag != null && offerTag.getTypeId() > 0) {
 				Offer offer = Offer.getOffer(offerTag, 0);
 				if (offer instanceof PlayerShopOffer) {
 					for (ItemStack stack : ((PlayerShopOffer) offer)
-							.takeContents())
+							.takeContents()) {
 						items.add(stack);
+					}
 				}
 			}
 		}

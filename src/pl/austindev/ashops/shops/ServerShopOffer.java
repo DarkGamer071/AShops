@@ -35,7 +35,7 @@ public abstract class ServerShopOffer extends Offer {
 		try {
 			if (offerTag.hasItemMeta()) {
 				List<String> lore = offerTag.getItemMeta().getLore();
-				if (lore.size() > 2) {
+				if (lore.size() > 0) {
 					String priceLine = lore.get(lore.size() - 1);
 					double price = ShopUtils.extractPrice(priceLine);
 					ItemStack rawItem = InventoryUtils.getReducedItem(offerTag,

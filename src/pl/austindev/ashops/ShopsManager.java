@@ -19,6 +19,7 @@ package pl.austindev.ashops;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -134,7 +135,7 @@ public class ShopsManager {
 				ShopUtils.getServerShopOwnerLine());
 	}
 
-	public Set<ItemStack> removePlayerShop(Chest chest, String ownerName) {
+	public List<ItemStack> removePlayerShop(Chest chest, String ownerName) {
 		plugin.getDataManager()
 				.removePlayerShop(chest.getLocation(), ownerName);
 		return releaseChest(chest);
@@ -395,10 +396,10 @@ public class ShopsManager {
 		return costs >= 0 ? costs : 0;
 	}
 
-	private Set<ItemStack> releaseChest(Chest chest) {
+	private List<ItemStack> releaseChest(Chest chest) {
 		Inventory inventory = chest.getInventory();
 		BlockUtils.closeForAll(inventory);
-		Set<ItemStack> contents = ShopUtils.getContents(chest);
+		List<ItemStack> contents = ShopUtils.getContents(chest);
 		inventory.clear();
 		ShopUtils
 				.clearShopSigns(ShopUtils.getAttachedSigns(chest.getLocation()));

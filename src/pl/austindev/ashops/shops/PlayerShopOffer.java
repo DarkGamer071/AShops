@@ -17,9 +17,8 @@
  */
 package pl.austindev.ashops.shops;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -68,13 +67,18 @@ public abstract class PlayerShopOffer extends Offer {
 		return null;
 	}
 
-	public synchronized Set<ItemStack> takeContents() {
-		Set<ItemStack> stacks = new HashSet<ItemStack>();
+	public synchronized List<ItemStack> takeContents() {
+		List<ItemStack> stacks = new LinkedList<ItemStack>();
 		int maxStackSize = getItem().getMaxStackSize();
-		for (int currentAmount = getAmount() % maxStackSize; getAmount() > 0; setAmount(getAmount()
-				- currentAmount)) {
+		for (int i = getAmount() / maxStackSize; i > 0; i--) {
 			ItemStack item = new ItemStack(getItem());
-			item.setAmount(currentAmount);
+			item.setAmount(maxStackSize);
+			stacks.add(item);
+		}
+		int leftItems = getAmount() % maxStackSize;
+		if (leftItems > 0) {
+			ItemStack item = new ItemStack(getItem());
+			item.setAmount(leftItems);
 			stacks.add(item);
 		}
 		return stacks;

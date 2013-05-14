@@ -156,9 +156,10 @@ public class ASBlockListener extends ASListener {
 							|| !getPlugin().getConfiguration().getBoolean(
 									ASConfigurationPath.PROTECTION)) {
 						for (ItemStack item : getShopsManager()
-								.removePlayerShop(chest, ownerName))
+								.removePlayerShop(chest, ownerName)) {
 							chest.getWorld().dropItemNaturally(
 									chest.getLocation(), item);
+						}
 						tell(player, ASMessage.REMOVED);
 						return true;
 					} else {
