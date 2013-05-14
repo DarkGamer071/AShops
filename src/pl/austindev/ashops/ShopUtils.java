@@ -17,9 +17,8 @@
  */
 package pl.austindev.ashops;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -52,26 +51,63 @@ public class ShopUtils {
 			+ "- closed -";
 	private static volatile String SERVER_ACCOUNT_NAME = null;
 	private static volatile String TAXES_ACCOUNT_NAME = null;
-
-	private static final Map<String, Integer> groupTaxes = new HashMap<String, Integer>();
+	private static volatile String SELL_DESCRIPTION;
+	private static volatile String BUY_DESCRIPTION;
 
 	private ShopUtils() {
+	}
+
+	public static void setSellDescription(String description) {
+		SELL_DESCRIPTION = description;
+	}
+
+	public static void setBuyDescription(String description) {
+		BUY_DESCRIPTION = description;
+	}
+
+	public static String getSellLine(double price) {
+		return SELL_DESCRIPTION + " " + ChatColor.BOLD + ChatColor.GREEN
+				+ String.format(Locale.ENGLISH, "%.2f", price);
+	}
+
+	public static String getBuyLine(double price) {
+		return BUY_DESCRIPTION + " " + ChatColor.BOLD + ChatColor.RED
+				+ String.format(Locale.ENGLISH, "%.2f", price);
+	}
+
+	public static double extractPrice(String line) {
+		String[] priceLine = line.split(ChatColor.BOLD.toString());
+		String priceString = priceLine[priceLine.length - 1];
+		return Double.parseDouble((priceString.charAt(1) == ChatColor.GREEN
+				.getChar() ? "" : "-") + priceString.substring(2));
+	}
+
+	public static Sign getEmptySign(Set<Sign> signs) {
+		for (Sign sign : signs) {
+			boolean empty = true;
+			for (String line : sign.getLines())
+				if (!line.equals(""))
+					empty = false;
+			if (empty)
+				return sign;
+		}
+		return null;
 	}
 
 	public static void setServerAccountName(String name) {
 		if (name != null && name.length() > 0) {
 			SERVER_ACCOUNT_NAME = name;
+		} else {
+			SERVER_ACCOUNT_NAME = null;
 		}
 	}
 
 	public static void setTaxesAccountName(String name) {
 		if (name != null && name.length() > 0) {
 			TAXES_ACCOUNT_NAME = name;
+		} else {
+			TAXES_ACCOUNT_NAME = null;
 		}
-	}
-
-	public static void setTaxes(String group, int value) {
-		groupTaxes.put(group, value);
 	}
 
 	public static String getServerAccountName() {
@@ -156,6 +192,10 @@ public class ShopUtils {
 					updateSign(sign, ownerName, false);
 				else
 					updateSign(sign, ownerName, true);
+	}
+
+	public static void setShopSign(Sign sign, String ownerName) {
+		updateSign(sign, ownerName, true);
 	}
 
 	public static void setShopOwner(Set<Sign> signs, String ownerName) {
@@ -251,6 +291,20 @@ public class ShopUtils {
 		return false;
 	}
 
+	public static boolean hasChestNeighbours(Block block) {
+		Set<Block> neighbours = BlockUtils.getHorizontalNeighbours(block);
+		neighbours.addAll(BlockUtils.getHorizontalNeighbours(block
+				.getRelative(BlockFace.UP)));
+		neighbours.addAll(BlockUtils.getHorizontalNeighbours(block
+				.getRelative(BlockFace.DOWN)));
+		for (Block neighbour : neighbours) {
+			if (neighbour.getType().equals(Material.CHEST)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static Set<ItemStack> getContents(Chest chest) {
 		Set<ItemStack> items = new HashSet<ItemStack>();
 		for (ItemStack offerTag : chest.getInventory().getContents()) {
@@ -278,17 +332,9 @@ public class ShopUtils {
 			String playerName, double value) {
 		if (!plugin.getPermissions().has(playerName, world,
 				ASPermission.NO_TAXES)) {
-			int taxes = 0;
-			for (String group : plugin.getPermissions().getGroups(playerName,
-					world)) {
-				if (groupTaxes.containsKey(group)) {
-					int gTaxes = groupTaxes.get(group);
-					if (gTaxes > taxes)
-						taxes = gTaxes;
-				}
-			}
-			if (taxes > 0) {
-				double toTake = value * ((double) taxes / 100);
+			int tax = plugin.getShopsManager().getTax(playerName, world);
+			if (tax > 0) {
+				double toTake = value * ((double) tax / 100);
 				if (TAXES_ACCOUNT_NAME != null) {
 					plugin.getEconomy().transfer(playerName,
 							TAXES_ACCOUNT_NAME, toTake);

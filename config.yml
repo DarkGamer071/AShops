@@ -9,8 +9,15 @@ name: databasebName
 user: databaseUser
 password: databasePassword
 
+# When false all players can destroy a shop, and get its contents.
+protection: true
+
+# Text that will appear before a price in a item description. If empty, values will be loaded from a translation file.
+buy_description:
+sell_description:
+
 # Uncomment and set if you want server shops to use an account to withdraw and deposit money.
-# server_account_name: name
+server_account_name:
 
 # Shops number limits for groups.
 limit:
@@ -28,11 +35,11 @@ exclude:
 discount:
   default: 0
 # Uncomment if you want to send collected taxes to specified account. You can set the same account in this property and in server_account_name.
-# taxes_account_name: name
+taxes_account_name:
 # Perecent of income that will be sent to the taxes account.
 taxes:
-  default: 0
+  - default: 0
 
 # List of regions, where player can create a shop.
-# regions:
-#  - regionName
+regions:
+  - regionName

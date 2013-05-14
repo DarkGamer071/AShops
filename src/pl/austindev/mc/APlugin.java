@@ -52,6 +52,7 @@ public abstract class APlugin extends JavaPlugin {
 	}
 
 	protected void setupConfiguration() {
+		getConfig().options().copyDefaults(true);
 		saveDefaultConfig();
 		configuration = new PluginConfiguration(this);
 	}

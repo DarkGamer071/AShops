@@ -38,6 +38,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import pl.austindev.ashops.data.DataAccessException;
 import pl.austindev.ashops.shops.Offer;
 import pl.austindev.ashops.shops.PlayerShopBuyOffer;
 import pl.austindev.ashops.shops.PlayerShopOffer;
@@ -174,10 +175,12 @@ public class OffersRegister {
 		for (int i = 0; i < items.length; i++)
 			if (items[i] != null) {
 				Offer offer = Offer.getOffer(items[i], i);
-				if (offer instanceof PlayerShopOffer) {
-					linkOppositeOffers(shop, (PlayerShopOffer) offer);
+				if (offer != null) {
+					if (offer instanceof PlayerShopOffer) {
+						linkOppositeOffers(shop, (PlayerShopOffer) offer);
+					}
+					shop.addOffer(i, offer);
 				}
-				shop.addOffer(i, offer);
 			}
 		return shop;
 	}
@@ -255,12 +258,13 @@ public class OffersRegister {
 		}
 	}
 
-	public void close() throws OfferLoadingException {
+	public void close() throws OfferLoadingException, DataAccessException {
 		for (Future<Shop> future : openedShops.values()) {
 			try {
 				Shop shop = future.get();
-				if (shop.isModified())
-					plugin.getDataManager().updateOffers(shop);
+				if (shop.isModified()) {
+					plugin.getDataManager().synchUpdateOffers(shop);
+				}
 			} catch (InterruptedException e) {
 				throw new OfferLoadingException(e);
 			} catch (ExecutionException e) {

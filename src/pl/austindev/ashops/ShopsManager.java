@@ -22,8 +22,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
@@ -43,6 +45,7 @@ import pl.austindev.ashops.shops.Owner;
 import pl.austindev.ashops.shops.Shop;
 import pl.austindev.mc.BlockUtils;
 import pl.austindev.mc.ItemUtil;
+import pl.austindev.mc.PlayerUtil;
 
 public class ShopsManager {
 	private final AShops plugin;
@@ -58,13 +61,8 @@ public class ShopsManager {
 	public ShopsManager(AShops plugin) throws DataAccessException {
 		this.plugin = plugin;
 		ShopUtils.setClosedShopMessage(plugin.$(ASMessage.SIGN_LINE_CLOSED));
+		loadDescriptionMessages();
 		loadConfigProperties();
-		for (String group : plugin.getPermissions().getGroups()) {
-			int value = plugin.getConfiguration().getInt(
-					ASConfigurationPath.TAXES, group);
-			if (value > 0)
-				ShopUtils.setTaxes(group, value);
-		}
 		loadExcludedItems();
 		offersRegister = OffersRegister.newInstance(plugin);
 		LoadResult result = plugin.getDataManager().start();
@@ -81,6 +79,23 @@ public class ShopsManager {
 				ASConfigurationPath.REGIONS));
 		excludedItems.clear();
 		loadExcludedItems();
+	}
+
+	public void loadDescriptionMessages() {
+		String sellMsg = plugin.getConfiguration().getString(
+				ASConfigurationPath.SELL_DESCRIPTION);
+		String buyMsg = plugin.getConfiguration().getString(
+				ASConfigurationPath.BUY_DESCRIPTION);
+		if (sellMsg == null || sellMsg.length() == 0)
+			sellMsg = plugin.$(ASMessage.DEFAULT_SELL_DESCRIPTION);
+		else
+			sellMsg = ChatColor.translateAlternateColorCodes('&', sellMsg);
+		if (buyMsg == null || buyMsg.length() == 0)
+			buyMsg = plugin.$(ASMessage.DEFAULT_BUY_DESCRIPTION);
+		else
+			buyMsg = ChatColor.translateAlternateColorCodes('&', buyMsg);
+		ShopUtils.setBuyDescription(buyMsg);
+		ShopUtils.setSellDescription(sellMsg);
 	}
 
 	public boolean toggleRepairMode(String playerName) {
@@ -130,28 +145,36 @@ public class ShopsManager {
 		plugin.getDataManager().removeServerShop(chest.getLocation());
 	}
 
-	public void recreatePlayerShop(Chest chest, String ownerName) {
+	public void recreatePlayerShop(Chest chest, Set<Offer> offers,
+			String ownerName) {
+		plugin.getDataManager().addOffers(chest.getLocation(), offers);
 		plugin.getDataManager().addPlayerShop(chest.getLocation(), ownerName);
 		ShopUtils.setShopSigns(ShopUtils.getAttachedSigns(chest.getLocation()),
 				ownerName);
 	}
 
-	public void recreateServerShop(Chest chest) {
+	public void recreateServerShop(Chest chest, Set<Offer> offers) {
+		plugin.getDataManager().addOffers(chest.getLocation(), offers);
 		plugin.getDataManager().addServerShop(chest.getLocation());
 		ShopUtils.setShopSigns(ShopUtils.getAttachedSigns(chest.getLocation()),
 				ShopUtils.getServerShopOwnerLine());
 	}
 
-	public void clearPlayerShops(String ownerName) throws DataAccessException {
-		for (Shop shop : plugin.getDataManager().getOwner(ownerName).getShops()
-				.values()) {
-			Block block = shop.getLocation().getBlock();
-			if (block != null && block.getType().equals(Material.CHEST)) {
-				Chest chest = (Chest) block.getState();
-				releaseChest(chest);
+	public boolean clearPlayerShops(String ownerName)
+			throws DataAccessException {
+		Owner owner = plugin.getDataManager().getOwner(ownerName);
+		if (owner.getShops().size() > 0) {
+			for (Shop shop : owner.getShops().values()) {
+				Block block = shop.getLocation().getBlock();
+				if (block != null && block.getType().equals(Material.CHEST)) {
+					Chest chest = (Chest) block.getState();
+					releaseChest(chest);
+				}
 			}
+			plugin.getDataManager().clearPlayerShops(ownerName);
+			return true;
 		}
-		plugin.getDataManager().clearPlayerShops(ownerName);
+		return false;
 	}
 
 	public void clearPlayerShops() throws DataAccessException {
@@ -253,7 +276,19 @@ public class ShopsManager {
 						"" + item.getTypeId());
 	}
 
-	public boolean canSell(Player player, ItemStack item) {
+	public int getTax(String playerName, World world) {
+		int tax = 0;
+		for (String group : plugin.getPermissions()
+				.getGroups(playerName, world)) {
+			int groupTax = plugin.getConfiguration().getInt(
+					ASConfigurationPath.TAXES, group);
+			if (groupTax > tax)
+				tax = groupTax;
+		}
+		return tax;
+	}
+
+	public boolean canTrade(Player player, ItemStack item) {
 		return plugin.getPermissions().has(player, ASPermission.ANY_ITEM_SELL)
 				|| !excludedItems.contains(item.getTypeId());
 	}
@@ -297,12 +332,21 @@ public class ShopsManager {
 
 	private void restoreOffers(String ownerName, Shop shop) {
 		Block block = shop.getLocation().getBlock();
+		boolean isPlayerShop = PlayerUtil.isValidPlayerName(ownerName);
 		if (block != null && block.getType().equals(Material.CHEST)
 				&& !BlockUtils.isDoubleChest(block)) {
 			Chest chest = (Chest) block.getState();
 			Set<Sign> signs = ShopUtils.getAttachedSigns(chest.getLocation());
 			ShopUtils.setShopSigns(signs, ownerName);
-			if (ShopUtils.hasShopSign(signs)) {
+			boolean noSign = false;
+			if (!ShopUtils.hasShopSign(signs)) {
+				Sign emptySign = ShopUtils.getEmptySign(signs);
+				if (emptySign != null)
+					ShopUtils.setShopSign(emptySign, ownerName);
+				else
+					noSign = true;
+			}
+			if (!noSign) {
 				ShopUtils.setShopOwner(signs, ownerName);
 				Inventory inventory = chest.getInventory();
 				BlockUtils.closeForAll(inventory);
@@ -311,12 +355,19 @@ public class ShopsManager {
 					offer.updateOfferTag(inventory);
 				}
 			} else {
-				plugin.getDataManager().removePlayerShop(chest.getLocation(),
-						ownerName);
+				if (isPlayerShop)
+					plugin.getDataManager().removePlayerShop(
+							block.getLocation(), ownerName);
+				else
+					plugin.getDataManager().removeServerShop(
+							block.getLocation());
 			}
 		} else {
-			plugin.getDataManager().removePlayerShop(block.getLocation(),
-					ownerName);
+			if (isPlayerShop)
+				plugin.getDataManager().removePlayerShop(block.getLocation(),
+						ownerName);
+			else
+				plugin.getDataManager().removeServerShop(block.getLocation());
 		}
 	}
 
@@ -364,5 +415,4 @@ public class ShopsManager {
 				ASConfigurationPath.EXCLUDED_ITEMS_LIST))
 			excludedItems.add(id);
 	}
-
 }

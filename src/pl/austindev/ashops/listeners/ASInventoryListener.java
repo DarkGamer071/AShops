@@ -20,7 +20,6 @@ package pl.austindev.ashops.listeners;
 import java.util.Set;
 
 import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -156,6 +155,8 @@ public class ASInventoryListener extends ASListener {
 						getShopsManager().removeOffer(chest, slot);
 					else
 						tell(player, ASMessage.COLLECT_ITEMS);
+				} else {
+					inventory.setItem(slot, null);
 				}
 			} else {
 				Offer offer = getShopsManager().getOffer(chest, slot);
@@ -171,6 +172,8 @@ public class ASInventoryListener extends ASListener {
 									((PlayerShopOffer) offer).collect(player,
 											inventory), player);
 					}
+				} else {
+					inventory.setItem(slot, null);
 				}
 			}
 		} else {
@@ -188,11 +191,15 @@ public class ASInventoryListener extends ASListener {
 		if (slot == event.getRawSlot()) {
 			int amount = InventoryUtils.getClickedAmount(event);
 			Offer offer = getShopsManager().getOffer(chest, slot);
-			if (offer != null
-					&& getPermissions().has(player, offer.getPermission()))
-				assertFailureMessage(
-						offer.trade(getPlugin(), player, inventory, amount),
-						player);
+			if (offer != null)
+				if (getPermissions().has(player, offer.getPermission()))
+					assertFailureMessage(
+							offer.trade(getPlugin(), player, inventory, amount),
+							player);
+				else
+					tell(player, ASMessage.NO_PERMISSION);
+			else
+				inventory.setItem(slot, null);
 		}
 
 	}
@@ -207,11 +214,14 @@ public class ASInventoryListener extends ASListener {
 			} else {
 				int amount = InventoryUtils.getClickedAmount(event);
 				Offer offer = getShopsManager().getOffer(chest, slot);
-				if (offer != null
-						&& getPermissions().has(player, offer.getPermission()))
-					assertFailureMessage(
-							offer.trade(getPlugin(), player, inventory, amount),
-							player);
+				if (offer != null)
+					if (getPermissions().has(player, offer.getPermission()))
+						assertFailureMessage(offer.trade(getPlugin(), player,
+								inventory, amount), player);
+					else
+						tell(player, ASMessage.NO_PERMISSION);
+				else
+					inventory.setItem(slot, null);
 			}
 		}
 
@@ -224,11 +234,15 @@ public class ASInventoryListener extends ASListener {
 		if (slot == event.getRawSlot()) {
 			int amount = InventoryUtils.getClickedAmount(event);
 			Offer offer = getShopsManager().getOffer(chest, slot);
-			if (offer != null
-					&& getPermissions().has(player, offer.getPermission()))
-				assertFailureMessage(
-						offer.trade(getPlugin(), player, inventory, amount),
-						player);
+			if (offer != null)
+				if (getPermissions().has(player, offer.getPermission()))
+					assertFailureMessage(
+							offer.trade(getPlugin(), player, inventory, amount),
+							player);
+				else
+					tell(player, ASMessage.NO_PERMISSION);
+			else
+				inventory.setItem(slot, null);
 		}
 	}
 
