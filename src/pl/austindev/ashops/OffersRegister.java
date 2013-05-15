@@ -192,10 +192,12 @@ public class OffersRegister {
 			for (Offer shopOffer : shop.getOffers().values()) {
 				if (shopOffer instanceof PlayerShopSellOffer) {
 					PlayerShopSellOffer sellOffer = (PlayerShopSellOffer) shopOffer;
-					buyOffer.getOppositeOffers().add(sellOffer);
-					if (transferItems(buyOffer, sellOffer)) {
-						offersToUpdate.add(sellOffer);
-						offersToUpdate.add(buyOffer);
+					if (sellOffer.getItem().isSimilar(buyOffer.getItem())) {
+						buyOffer.getOppositeOffers().add(sellOffer);
+						if (transferItems(buyOffer, sellOffer)) {
+							offersToUpdate.add(sellOffer);
+							offersToUpdate.add(buyOffer);
+						}
 					}
 				}
 			}
@@ -204,10 +206,12 @@ public class OffersRegister {
 			for (Offer shopOffer : shop.getOffers().values()) {
 				if (shopOffer instanceof PlayerShopBuyOffer) {
 					PlayerShopBuyOffer buyOffer = (PlayerShopBuyOffer) shopOffer;
-					buyOffer.getOppositeOffers().add(sellOffer);
-					if (transferItems(buyOffer, sellOffer)) {
-						offersToUpdate.add(sellOffer);
-						offersToUpdate.add(buyOffer);
+					if (buyOffer.getItem().isSimilar(sellOffer.getItem())) {
+						buyOffer.getOppositeOffers().add(sellOffer);
+						if (transferItems(buyOffer, sellOffer)) {
+							offersToUpdate.add(sellOffer);
+							offersToUpdate.add(buyOffer);
+						}
 					}
 				}
 			}
