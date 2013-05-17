@@ -25,6 +25,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -34,6 +35,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -49,6 +51,19 @@ public class ASBlockListener extends ASListener {
 
 	public ASBlockListener(AShops plugin) {
 		super(plugin);
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+		Block block = event.getBlock();
+		if (block != null
+				&& !event.getEntity().getType().equals(EntityType.PLAYER)) {
+			if (block.getType().equals(Material.CHEST)) {
+				event.setCancelled(!canDestroyChest(null, block));
+			} else if (block.getType().equals(Material.WALL_SIGN)) {
+				event.setCancelled(!canDestroyWallSign(null, block));
+			}
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -92,6 +107,12 @@ public class ASBlockListener extends ASListener {
 	public void onBlockPlace(BlockPlaceEvent event) {
 		Block block = event.getBlock();
 		if (block.getType().equals(Material.CHEST)) {
+			if (ShopUtils.hasShopNeighbours(block)) {
+				tell(event.getPlayer(), ASMessage.SHOP_NEIGHBOUR);
+				event.setCancelled(true);
+				event.getPlayer().updateInventory();
+			}
+		} else if (block.getType().equals(Material.HOPPER)) {
 			if (ShopUtils.hasShopNeighbours(block)) {
 				tell(event.getPlayer(), ASMessage.SHOP_NEIGHBOUR);
 				event.setCancelled(true);
@@ -237,7 +258,8 @@ public class ASBlockListener extends ASListener {
 
 	private boolean applyShopSignLines(SignChangeEvent event, Player player,
 			Block block) {
-		if (block != null && block.getType().equals(Material.CHEST)) {
+		if (block != null && block.getType().equals(Material.CHEST)
+				&& !BlockUtils.isDoubleChest(block)) {
 			Chest chest = (Chest) block.getState();
 			Set<Sign> signs = ShopUtils.getAttachedSigns(chest.getLocation());
 			if (ShopUtils.hasShopSign(signs)) {

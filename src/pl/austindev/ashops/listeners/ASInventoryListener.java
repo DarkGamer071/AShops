@@ -51,21 +51,21 @@ public class ASInventoryListener extends ASListener {
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
 	public void onInvnetoryMoveItem(InventoryMoveItemEvent event) {
 		Inventory source = event.getSource();
-		if (source.getType().equals(InventoryType.CHEST)) {
+		if (source.getType().equals(InventoryType.CHEST)
+				&& source.getHolder() instanceof Chest) {
 			Chest chest = (Chest) source.getHolder();
 			Set<Sign> signs = ShopUtils.getAttachedSigns(chest.getLocation());
 			if (ShopUtils.hasShopSign(signs) || ShopUtils.hasTagSign(signs)) {
 				event.setCancelled(true);
 			}
-		} else {
-			Inventory destination = event.getDestination();
-			if (destination.getType().equals(InventoryType.CHEST)) {
-				Chest chest = (Chest) destination.getHolder();
-				Set<Sign> signs = ShopUtils.getAttachedSigns(chest
-						.getLocation());
-				if (ShopUtils.hasShopSign(signs) || ShopUtils.hasTagSign(signs)) {
-					event.setCancelled(true);
-				}
+		}
+		Inventory destination = event.getDestination();
+		if (destination.getType().equals(InventoryType.CHEST)
+				&& destination.getHolder() instanceof Chest) {
+			Chest chest = (Chest) destination.getHolder();
+			Set<Sign> signs = ShopUtils.getAttachedSigns(chest.getLocation());
+			if (ShopUtils.hasShopSign(signs) || ShopUtils.hasTagSign(signs)) {
+				event.setCancelled(true);
 			}
 		}
 	}

@@ -44,6 +44,7 @@ import pl.austindev.ashops.shops.PlayerShopBuyOffer;
 import pl.austindev.ashops.shops.PlayerShopOffer;
 import pl.austindev.ashops.shops.PlayerShopSellOffer;
 import pl.austindev.ashops.shops.Shop;
+import pl.austindev.mc.BlockUtils;
 
 public class OffersRegister {
 	private final AShops plugin;
@@ -75,8 +76,7 @@ public class OffersRegister {
 		final Location location = chest.getLocation();
 		Future<Shop> shopFuture = openedShops.get(location);
 		if (shopFuture == null) {
-			final ItemStack[] items = ((Chest) location.getBlock().getState())
-					.getInventory().getContents();
+			final ItemStack[] items = chest.getInventory().getContents();
 			Callable<Shop> shopTask = new Callable<Shop>() {
 				@Override
 				public Shop call() throws Exception {
@@ -248,7 +248,8 @@ public class OffersRegister {
 				try {
 					Shop shop = shopFuture.get();
 					Block block = shop.getLocation().getBlock();
-					if (block != null && block.getType().equals(Material.CHEST)) {
+					if (block != null && block.getType().equals(Material.CHEST)
+							&& !BlockUtils.isDoubleChest(block)) {
 						Chest chest = (Chest) block.getState();
 						if (chest.getInventory().getViewers().size() == 0)
 							openedShops.remove(shop.getLocation(), shopFuture);

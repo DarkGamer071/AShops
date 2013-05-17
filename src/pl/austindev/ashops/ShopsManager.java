@@ -76,8 +76,10 @@ public class ShopsManager {
 		ShopUtils.setTaxesAccountName(plugin.getConfiguration().getString(
 				ASConfigurationPath.TAXES_ACCOUNT_NAME));
 		allowedRegions.clear();
-		allowedRegions.addAll(plugin.getConfiguration().getStringList(
-				ASConfigurationPath.REGIONS));
+		for (String region : plugin.getConfiguration().getStringList(
+				ASConfigurationPath.REGIONS))
+			if (region != null && region.length() > 0)
+				allowedRegions.add(region);
 		excludedItems.clear();
 		loadExcludedItems();
 	}
@@ -167,7 +169,8 @@ public class ShopsManager {
 		if (owner.getShops().size() > 0) {
 			for (Shop shop : owner.getShops().values()) {
 				Block block = shop.getLocation().getBlock();
-				if (block != null && block.getType().equals(Material.CHEST)) {
+				if (block != null && block.getType().equals(Material.CHEST)
+						&& !BlockUtils.isDoubleChest(block)) {
 					Chest chest = (Chest) block.getState();
 					releaseChest(chest);
 				}
@@ -299,13 +302,15 @@ public class ShopsManager {
 		for (Owner owner : plugin.getDataManager().getOwners())
 			for (Shop shop : owner.getShops().values()) {
 				Block block = shop.getLocation().getBlock();
-				if (block != null && block.getType().equals(Material.CHEST)) {
+				if (block != null && block.getType().equals(Material.CHEST)
+						&& !BlockUtils.isDoubleChest(block)) {
 					((Chest) block.getState()).getInventory().clear();
 				}
 			}
 		for (Shop shop : plugin.getDataManager().getServerShops()) {
 			Block block = shop.getLocation().getBlock();
-			if (block != null && block.getType().equals(Material.CHEST)) {
+			if (block != null && block.getType().equals(Material.CHEST)
+					&& !BlockUtils.isDoubleChest(block)) {
 				((Chest) block.getState()).getInventory().clear();
 			}
 		}

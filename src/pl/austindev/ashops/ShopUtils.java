@@ -278,6 +278,8 @@ public class ShopUtils {
 
 	public static boolean hasShopNeighbours(Block block) {
 		Set<Block> neighbours = BlockUtils.getHorizontalNeighbours(block);
+		neighbours.add(block.getRelative(BlockFace.UP));
+		neighbours.add(block.getRelative(BlockFace.DOWN));
 		neighbours.addAll(BlockUtils.getHorizontalNeighbours(block
 				.getRelative(BlockFace.UP)));
 		neighbours.addAll(BlockUtils.getHorizontalNeighbours(block
