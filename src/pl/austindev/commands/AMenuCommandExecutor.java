@@ -24,21 +24,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import pl.austindev.ashops.AShops;
-import pl.austindev.ashops.keys.ASCommand;
-import pl.austindev.ashops.keys.ASMessage;
+import pl.austindev.ashops.menus.Menu;
 
-public class ARepairCommandExecutor extends ASCommandExecutor {
+public class AMenuCommandExecutor extends ASCommandExecutor {
 
-	public ARepairCommandExecutor(AShops plugin) {
-		super(plugin, ASCommand.AREPAIR);
+	public AMenuCommandExecutor(AShops plugin) {
+		super(plugin, /*ASCommand.AMENU*/ null);
+		//TODO:
 	}
 
 	@Override
 	protected void run(CommandSender sender, Command command, String label,
 			List<String> arguments) {
 		Player player = (Player) sender;
-		tell(player,
-				getShopsManager().toggleRepairMode(player.getName()) ? ASMessage.REPAIR_MODE
-						: ASMessage.NORMAL_MODE);
+		Menu.open(getPlugin(), player);
 	}
 }

@@ -51,6 +51,10 @@ public abstract class APlugin extends JavaPlugin {
 		return permissions;
 	}
 
+	public MessageTranslator getTranslator() {
+		return translations;
+	}
+
 	protected void setupConfiguration() {
 		saveDefaultConfig();
 		configuration = new PluginConfiguration(this);

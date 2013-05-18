@@ -61,7 +61,9 @@ public enum ASCommand implements ACommand {
 			ASMessage.CMD_ATOGGLE, true, 0, 0, ASPermission.OWN_BUY_SHOP,
 			ASPermission.OWN_SELL_SHOP),
 	ARELOAD(AReloadCommandExecutor.class, ASMessage.CMD_ARELOAD, false, 0,
-			0, ASPermission.OPERATOR);
+			0, ASPermission.OPERATOR),
+/*	AMENU(AMenuCommandExecutor.class, ASMessage.CMD_AMENU, true, 0, 0,
+			ASPermission.OWN_BUY_SHOP, ASPermission.OWN_SELL_SHOP)*/;
 
 	private final Class<? extends ACommandExecutor<AShops>> executor;
 	private final AMessage description;

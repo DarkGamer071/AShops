@@ -15,30 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.austindev.commands;
+package pl.austindev.ashops.menus;
 
-import java.util.List;
-
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import pl.austindev.ashops.AShops;
-import pl.austindev.ashops.keys.ASCommand;
-import pl.austindev.ashops.keys.ASMessage;
 
-public class ARepairCommandExecutor extends ASCommandExecutor {
+public class ItemSelectMenu implements MenuStep {
+	// private final AShops plugin;
+	// private final Inventory inventory;
+	// private final Menu menu;
+	// private final Player player;
 
-	public ARepairCommandExecutor(AShops plugin) {
-		super(plugin, ASCommand.AREPAIR);
+	public ItemSelectMenu(AShops plugin, Player player, Menu menu) {
+		// this.plugin = plugin;
+		// this.menu = menu;
+		// this.player = player;
+		// TODO:
 	}
 
 	@Override
-	protected void run(CommandSender sender, Command command, String label,
-			List<String> arguments) {
-		Player player = (Player) sender;
-		tell(player,
-				getShopsManager().toggleRepairMode(player.getName()) ? ASMessage.REPAIR_MODE
-						: ASMessage.NORMAL_MODE);
+	public void next(int slot) {
+		// TODO Auto-generated method stub
+
 	}
+
 }

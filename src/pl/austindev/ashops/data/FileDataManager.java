@@ -71,7 +71,7 @@ public class FileDataManager extends DataManager {
 	@Override
 	public int countShops(String ownerName) {
 		synchronized (shopCounter) {
-			Integer counter = shopCounter.get(ownerName);
+			Integer counter = shopCounter.get(ownerName.toLowerCase());
 			return counter != null ? counter : 0;
 		}
 	}
@@ -320,7 +320,7 @@ public class FileDataManager extends DataManager {
 		File file = getFile(ownerName);
 		if (file.exists())
 			file.delete();
-		shopCounter.remove(ownerName);
+		shopCounter.remove(ownerName.toLowerCase());
 	}
 
 	@Override
@@ -362,7 +362,7 @@ public class FileDataManager extends DataManager {
 		synchronized (shopCounter) {
 			shopCounter.clear();
 			for (Owner owner : owners)
-				shopCounter.put(owner.getName(), owner.getShops().size());
+				shopCounter.put(owner.getName().toLowerCase(), owner.getShops().size());
 		}
 		return new LoadResult(owners, new HashSet<Shop>(serverShops.values()));
 	}

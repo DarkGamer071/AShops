@@ -20,6 +20,7 @@ package pl.austindev.ashops.shops;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -43,7 +44,11 @@ public class ServerShopSellOffer extends ServerShopOffer {
 	public void updateOfferTag(Inventory inventory) {
 		setModified();
 		ItemStack offerTag = new ItemStack(getItem());
-		ItemMeta meta = offerTag.getItemMeta();
+		ItemMeta meta;
+		if (offerTag.hasItemMeta())
+			meta = offerTag.getItemMeta();
+		else
+			meta = Bukkit.getItemFactory().getItemMeta(offerTag.getType());
 		List<String> lore = meta.getLore();
 		if (lore == null)
 			lore = new LinkedList<String>();

@@ -3,6 +3,7 @@
 # language: <value>
 # Specifies messages language. Currently supported languages:
 # - en for english.
+# - de for german.
 # - pl for polish.
 language: en
 
@@ -40,7 +41,7 @@ server_account_name:
 #   ...
 #   <groupNameN>: <value>
 limit:
-  default: 2
+  default: 0
 
 # Specifies a price, that a member of a listed group will pay, when creates a shop. If player belongs to more than one group, it will use a maximum value. It must be integer!
 # price:

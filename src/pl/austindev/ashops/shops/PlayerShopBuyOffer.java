@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -54,7 +55,11 @@ public class PlayerShopBuyOffer extends PlayerShopOffer {
 	public void updateOfferTag(Inventory inventory) {
 		setModified();
 		ItemStack offerTag = new ItemStack(getItem());
-		ItemMeta meta = offerTag.getItemMeta();
+		ItemMeta meta;
+		if (offerTag.hasItemMeta())
+			meta = offerTag.getItemMeta();
+		else
+			meta = Bukkit.getItemFactory().getItemMeta(offerTag.getType());
 		List<String> lore = meta.getLore();
 		if (lore == null)
 			lore = new LinkedList<String>();

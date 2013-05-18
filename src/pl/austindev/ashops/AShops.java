@@ -20,6 +20,8 @@ package pl.austindev.ashops;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.bukkit.Bukkit;
 
@@ -31,6 +33,7 @@ import pl.austindev.ashops.listeners.ASBlockListener;
 import pl.austindev.ashops.listeners.ASInventoryListener;
 import pl.austindev.ashops.listeners.ASPlayerListener;
 import pl.austindev.ashops.listeners.ASPluginListener;
+import pl.austindev.ashops.menus.Menu;
 import pl.austindev.mc.ACommandExecutor;
 import pl.austindev.mc.APlugin;
 import pl.austindev.mc.PluginSetupException;
@@ -43,6 +46,7 @@ public class AShops extends APlugin {
 	private volatile DataManager dataManager;
 	private volatile WorldGuardPlugin worldGuard;
 	private volatile WorldEditPlugin worldEdit;
+	private volatile ConcurrentMap<String, Menu> menus = new ConcurrentHashMap<String, Menu>();
 
 	@Override
 	public void onEnable() {
@@ -65,6 +69,18 @@ public class AShops extends APlugin {
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
 		setupMetrics();
+	}
+
+	public Menu getMenu(String playerName) {
+		return menus.get(playerName.toLowerCase());
+	}
+
+	public void registerMenu(Menu menu) {
+		menus.put(menu.getPlayer().getName().toLowerCase(), menu);
+	}
+
+	public void unregisterMenu(String playerName) {
+		menus.remove(playerName);
 	}
 
 	public ShopsManager getShopsManager() {
